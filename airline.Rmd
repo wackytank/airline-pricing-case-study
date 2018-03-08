@@ -1,0 +1,180 @@
+---
+title: "Airline Pricing Analysis"
+author: "Vaibhav Srivastav"
+date: "16 February 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Airline Pricing Analysis
+
+This is a mini project on the analysis of the difference between the pricing of premium economy and economy class airline tickets.
+
+## 1. Set the working directory.
+
+```{r wd}
+setwd("~/Desktop/Data Analytics Internship/Airline")
+```
+
+## 2. Read the dataset using the read.csv() function.
+
+```{r rd}
+air<-read.csv(file="SixAirlinesDataV2.csv")
+```
+
+## 3. Use the View() function to view the dataframe created in the previous step.
+
+```{r view}
+View(air)
+```
+
+## 4. Describing the Dataset
+
+```{r desc}
+library(psych)
+describe(air)
+```
+
+# Summary
+
+```{r summ}
+summary(air)
+```
+
+# Structure of Dataset
+
+```{r struc}
+str(air)  
+```
+
+## Plots to visualize the distribution of each variable independently
+
+# Flight Duration
+
+```{r plot1}
+boxplot(air$FlightDuration, horizontal=TRUE,
+        main="Flight duration of all the airlines")
+```
+
+# Economic Seats
+
+```{r plot2}
+boxplot(air$SeatsEconomy, horizontal=TRUE,
+        main="Economic seats of all airlines")
+```
+
+# Premium seats
+
+```{r plot3}
+boxplot(air$SeatsPremium, horizontal=TRUE,
+        main="Flight durations of all the airlines")
+```
+
+# Economy Price
+
+```{r plot4}
+boxplot(air$PriceEconomy, horizontal=TRUE,
+        main="Economic prices of all airlines")
+```
+
+# Premium Price
+
+```{r plot5}
+boxplot(air$PricePremium, horizontal=TRUE,
+        main="Premium prices of all airlines")
+```
+
+## Boxplot for relative price for each pitch difference
+
+```{r relative}
+boxplot(air$PriceRelative ~ air$PitchDifference, horizontal=TRUE,
+        xlab = "Price Relative", ylab = "Pitch Difference",
+        main = "Relative price changes according to pitch difference",
+        col=c("red","blue","green","yellow","brown")
+          )
+```
+
+## 
+
+```{r relative2}
+boxplot(air$PriceRelative ~ air$WidthDifference, horizontal=TRUE,
+        xlab = "Price Relative", ylab = "Width Difference",
+        main = "Relative price changes according to width difference",
+        col=c("red","blue","green","yellow","brown")
+          )
+```
+
+## Scatter Plots to understand how are the variables correlated pair-wise
+
+# Economic pricing variables
+```{r scatplot}
+library(car)
+ scatterplotMatrix(formula = ~ FlightDuration + SeatsEconomy + PitchEconomy + WidthEconomy + PriceEconomy + PriceRelative, data = air, diagonal="histogram")
+```
+
+# Premium pricing dependent variables
+
+```{r scatplot2}
+scatterplotMatrix(formula = ~ FlightDuration + SeatsPremium + PitchPremium + WidthPremium + PricePremium + PriceRelative, data = air, diagonal="histogram")
+```
+
+## Corrgram
+# Create a Variance-Covariance Matrix
+
+
+```{r corg}
+library(corrgram)
+corrgram(air, order=FALSE, 
+         lower.panel=panel.shade,
+         upper.panel=panel.pie, 
+         diag.panel=panel.minmax,
+         text.panel=panel.txt,
+         main="Corrgram of airlines intercorrelations")
+```
+
+## Correlation
+
+```{r cor}
+cor.test(air$PriceRelative, air$PitchDifference)
+
+```
+As p<0.05, these 2 variables are strongly corelated.
+
+```{r cor2}
+cor.test(air$PriceRelative, air$WidthDifference)
+```
+As p<0.05, these 2 variables are strongly corelated.
+
+## Regression Model
+
+Pitchpremium,widthpremium,pitchdifference,pricerelative,widtheconomy,flightduration,seatseconomy has a strong positive correlation with one another. Also, There is a strong positive correlation between pitchpremium and widthpremium , widthpremium and width difference, etc.
+
+# Premium Pricing 
+
+Dependent variable: PricePremium 
+Independent variable: Flightduration,PitchPremium and WidthPremium 
+Independent variables are affecting/influencing the Pricing of Premium class tickets.
+
+Following linear regression model considered,
+*PricePremium = x0 + x1FlightDuration + x2WidthPremium + x3PitchPremium*
+
+```{r prem}
+prem <- lm(air$PricePremium~air$FlightDuration+air$WidthPremium+air$PitchPremium)
+summary(prem)
+```
+There is a significant effect of width and pitch on the pricing of the premium class tickets. Now, assuming the same for economic class.
+
+# Economic Pricing 
+
+Dependent variable: PriceEconomy
+Independent variable: Flightduration,PitchEconomy and WidthEconomy
+Independent variables are affecting/influencing the Pricing of Economy class tickets.
+
+```{r eco}
+eco <- lm(air$PriceEconomy~air$FlightDuration+air$WidthEconomy+air$PitchEconomy)
+summary(eco)
+```
+Hence, Flight duration, width of the seat and the pitch of the seat are the factors that influence the pricing of airline tickets.
